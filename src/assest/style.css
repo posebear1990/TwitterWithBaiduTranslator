@@ -1,0 +1,57 @@
+.tt-translator-button {
+  font-size: 13px;
+  margin-top: 5px;
+  white-space: initial;
+  cursor: pointer;
+}
+
+.tt-translator-button.hide {
+  display: none;
+}
+
+.tt-translator-button:hover {
+  text-decoration: underline;
+}
+
+.tt-translator-loading-container {
+  text-align: center;
+}
+.tt-translator-loading {
+  animation: spin 800ms infinite linear;
+  width: 30px;
+  height: 30px;
+}
+
+.tt-translator-result-container {
+  white-space: initial;
+}
+
+.tt-translator-result {
+  white-space: pre-line;
+}
+
+.tt-translator-result-header {
+  white-space: nowrap;
+  word-break: break-all;
+  font-size: 13px;
+  margin: -5px 0 5px;
+}
+
+.tt-translator-result-supporter {
+  text-decoration: none;
+}
+
+.tt-translator-result-supporter > img {
+  height: 30px;
+  vertical-align: bottom;
+  margin: 0 -4px;
+}
+
+.tt-translator-result-switch:hover {
+  text-decoration: underline;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
