@@ -87,7 +87,7 @@ function init() {
         $loading.getElementsByClassName('tt-translator-loading-background')[0].style.stroke = buttonColor;
         $loading.getElementsByClassName('tt-translator-loading-front')[0].style.stroke = buttonColor;
 
-        const text = ($textContainer.innerText || '').split('\n翻译推文')[0];
+        const text = ($textContainer.textContent || '').split('翻译推文')[0];
         const locale = $textContainer.getAttribute('lang');
         const localeMap = { ja: '日语', en: '英语' };
 
