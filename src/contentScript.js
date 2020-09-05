@@ -88,8 +88,8 @@ function init() {
         $loading.getElementsByClassName('tt-translator-loading-front')[0].style.stroke = buttonColor;
 
         const text = ($textContainer.textContent || '').split('翻译推文')[0];
-        const locale = $textContainer.getAttribute('lang');
-        const localeMap = { ja: '日语', en: '英语' };
+        const locale = $textContainer.getAttribute('lang') === 'ja' ? 'jp' : $textContainer.getAttribute('lang');
+        const localeMap = { jp: '日语', en: '英语' };
 
         $textContainer.appendChild($loading);
         isLoading = true;
