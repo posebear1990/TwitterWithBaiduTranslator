@@ -4,7 +4,7 @@
 
 ## 安装
 
-[![通过 ChromeWebStore 进行安装](https://developer.chrome.com/webstore/images/ChromeWebStore_Badge_v2_340x96.png)](https://chrome.google.com/webstore/detail/%E6%8E%A8%E7%89%B9%E7%BF%BB%E8%AF%91%E7%86%8A-twitter-with-baidu/jfoppggphfkahfohdamcijagmpgffenp?hl=zh-CN&authuser=0)
+[通过 ChromeWebStore 进行安装](https://chrome.google.com/webstore/detail/%E6%8E%A8%E7%89%B9%E7%BF%BB%E8%AF%91%E7%86%8A-twitter-with-baidu/jfoppggphfkahfohdamcijagmpgffenp?hl=zh-CN&authuser=0)
 
 ## 开发
 
