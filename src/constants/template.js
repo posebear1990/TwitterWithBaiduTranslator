@@ -1,7 +1,9 @@
+const translator = config.appid ? 'baidu' : 'google';
+
 export default {
   fromDiv: `<div class="tt-translator-result-container">
               <div class="tt-translator-result-header">
-                由<a href="https://fanyi.baidu.com" target="_blank" role="link" data-focusable="true" class="tt-translator-result-supporter" rel="noopener noreferrer"> <img src="${chrome.runtime.getURL('/images/baidu_logo.png')}" /> </a><span class="tt-translator-result-switch" role="button">翻译自 {0}</span>
+                由<a href="https://fanyi.baidu.com" target="_blank" role="link" data-focusable="true" class="tt-translator-result-supporter" rel="noopener noreferrer"> <img src="${chrome.runtime.getURL(`/images/${translator}_logo.png`)}" /> </a><span class="tt-translator-result-switch" role="button">翻译自 {0}</span>
               </div>
               <div class="tt-translator-result">{1}</div>
             </div>`,

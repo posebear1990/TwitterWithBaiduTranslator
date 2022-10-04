@@ -34,7 +34,7 @@
   white-space: nowrap;
   word-break: break-all;
   font-size: 13px;
-  margin: -5px 0 5px;
+  margin: 0 0 5px;
 }
 
 .tt-translator-result-supporter {
@@ -42,9 +42,10 @@
 }
 
 .tt-translator-result-supporter > img {
-  height: 30px;
+  height: auto;
+  max-width: 55px;
   vertical-align: bottom;
-  margin: 0 -4px;
+  margin: 0 2px;
 }
 
 .tt-translator-result-switch:hover {
@@ -52,6 +53,10 @@
 }
 
 @keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

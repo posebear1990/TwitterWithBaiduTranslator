@@ -24,10 +24,10 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
     if ($googleTranslateWrapper?.getAttribute('lang') === 'en') {
       tweetWrapperList = tweetWrapperList.filter(
         ($tweetWrapper) => {
-          console.log($tweetWrapper, $googleTranslateWrapper);
-          return $tweetWrapper !== $googleTranslateWrapper;
-        },
-      );
+        console.log($tweetWrapper, $googleTranslateWrapper);
+        return $tweetWrapper !== $googleTranslateWrapper;
+      },
+    );
     } else {
       $googleTranslateWrapper?.nextElementSibling?.getAttribute('role')
         === 'button' && $googleTranslateWrapper.nextElementSibling.remove();
@@ -35,7 +35,7 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
   }
   tweetWrapperList.forEach(($tweetWrapper) => {
     $tweetWrapper.setAttribute('data-has-translator', true);
-    $tweetWrapper.appendChild($translateButton.cloneNode(true));
+    $tweetWrapper.textContent && $tweetWrapper.appendChild($translateButton.cloneNode(true));
   });
 }
 

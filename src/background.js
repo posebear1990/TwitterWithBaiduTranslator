@@ -6,24 +6,50 @@ function generateSignature({ appid, q, salt }, appkey) {
   return md5(`${appid}${q}${salt}${appkey}`);
 }
 
-async function translate(text, locale) {
-  const salt = randomString(5);
-  const params = {
-    q: text,
-    from: locale,
-    to: 'zh',
-    appid: config.appid,
-    salt,
-  };
-  params.sign = generateSignature(params, config.appkey);
+const translator = config.appid ? 'baidu' : 'google';
 
-  const response = await fetch(
-    `${config.translatorAPI}?${stringifyQueryParameter(params)}`,
-    { method: 'GET' },
-  );
+async function translate(text, locale) {
+  let url = '';
+  if (translator === 'google') {
+    url =
+      config.googleTranslatorAPI +
+      stringifyQueryParameter({
+        q: text,
+        tl: 'zh_CN',
+        sl: 'auto',
+        client: 'dict-chrome-ex',
+      });
+  } else {
+    const salt = randomString(5);
+    const params = {
+      q: text,
+      from: locale,
+      to: 'zh',
+      appid: config.appid,
+      salt,
+    };
+    params.sign = generateSignature(params, config.appkey);
+    url = config.baiduTranslatorAPI + stringifyQueryParameter(params);
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+  });
+
   const resp = await response.json();
 
-  return resp;
+  if (resp.error_code) {
+    return Promise.reject(new Error('translate result error!'));
+  }
+
+  if ((translator = 'google')) {
+    return resp[0]
+      .map((item) => item[0])
+      .filter((item) => typeof item === 'string')
+      .join('');
+  } else {
+    return resp.trans_result.map((item) => item.dst).join('\n');
+  }
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -40,20 +66,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (!res.error_code) {
           return Promise.resolve(res);
         }
-        return Promise.reject(
-          new Error('Exceed the maximum number of concurrent!'),
-        );
+
+        return Promise.reject(new Error('Exceed the maximum number of concurrent!'));
       },
       1,
-      5,
+      5
     )
       .then((resp) => {
         sendResponse({
           type: 'translate-result',
           payload: {
-            translateResult: resp.trans_result
-              .map((item) => item.dst)
-              .join('\n'),
+            translateResult: resp,
           },
         });
       })
