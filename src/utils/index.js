@@ -3,12 +3,8 @@ export function retry(fn, interval = 5, maxLimit = 5, intervalStep = 0) {
 
   // eslint-disable-next-line no-param-reassign
   maxLimit -= 1;
-  const attempt = () => retry(
-    fn,
-    intervalStep ? interval + intervalStep : interval,
-    maxLimit,
-    intervalStep,
-  );
+  const attempt = () =>
+    retry(fn, intervalStep ? interval + intervalStep : interval, maxLimit, intervalStep);
 
   if (result instanceof Promise) {
     return new Promise((resolve, reject) => {
@@ -18,8 +14,8 @@ export function retry(fn, interval = 5, maxLimit = 5, intervalStep = 0) {
             attempt().then(resolve).catch(reject);
           }, interval * 1000);
         } else {
-          const error = new Error('Time out!');
-          error.name = 'timeout';
+          const error = new Error("Time out!");
+          error.name = "timeout";
           error.detail = err;
 
           reject(error);
@@ -27,13 +23,13 @@ export function retry(fn, interval = 5, maxLimit = 5, intervalStep = 0) {
       });
     });
   }
-  if (maxLimit && (typeof result === 'boolean' ? !result : true)) {
+  if (maxLimit && (typeof result === "boolean" ? !result : true)) {
     setTimeout(attempt, interval * 1000);
   }
 }
 
 export function createElement(innerHtml) {
-  const $Wrapper = document.createElement('div');
+  const $Wrapper = document.createElement("div");
   $Wrapper.innerHTML = innerHtml;
   return $Wrapper.firstElementChild;
 }
@@ -44,14 +40,14 @@ export function randomString(len) {
 
 export function stringifyQueryParameter(data) {
   const ret = Object.keys(data).map(
-    (key) => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`,
+    (key) => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`
   );
-  return ret.join('&');
+  return ret.join("&");
 }
 
-export function templateReplace(template = '', ...args) {
+export function templateReplace(template = "", ...args) {
   let templateString = template.trim();
-  templateString = templateString.replace(/\n/g, '');
+  templateString = templateString.replace(/\n/g, "");
 
   if (Array.isArray(args)) {
     args.forEach((param, i) => {

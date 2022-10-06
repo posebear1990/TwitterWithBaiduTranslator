@@ -1,22 +1,24 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable import/no-extraneous-dependencies  */
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
-const rollup = require('rollup');
-const { nodeResolve } = require('@rollup/plugin-node-resolve');
-const commonjs = require('@rollup/plugin-commonjs');
-const replace = require('@rollup/plugin-replace');
+const fs = require("fs");
+const path = require("path");
+const dotenv = require("dotenv");
+const rollup = require("rollup");
+const { nodeResolve } = require("@rollup/plugin-node-resolve");
+const commonjs = require("@rollup/plugin-commonjs");
+const replace = require("@rollup/plugin-replace");
 
 const env = dotenv.config();
 
-const envReplaceConfig = {};
+const envReplaceConfig = {
+  preventAssignment: true
+};
 Object.keys(env.parsed).forEach((key) => {
   envReplaceConfig[`process.env.${key}`] = `'${env.parsed[key]}'`;
 });
 
 if (/.*appid$/.test(process.env.TT_APP_ID)) {
-  throw new Error('请正确配置环境变量：修改根目录的 .env 文件');
+  throw new Error("请正确配置环境变量：修改根目录的 .env 文件");
 }
 
 function combineConf(conf, outputConf) {
@@ -24,8 +26,8 @@ function combineConf(conf, outputConf) {
     ...conf,
     output: outputConf,
     watch: {
-      incude: 'src/',
-    },
+      incude: "src/"
+    }
   };
 }
 
@@ -33,16 +35,16 @@ function eventHandler(event) {
   const stderr = console.error.bind(console);
 
   switch (event.code) {
-    case 'BUNDLE_START':
+    case "BUNDLE_START":
       stderr(`${event.input}: 正在构建单个文件束...`);
       break;
-    case 'BUNDLE_END':
+    case "BUNDLE_END":
       stderr(`${event.input}: 用 ${event.duration}ms 完成构建. 监听变化中...`);
       break;
-    case 'ERROR':
+    case "ERROR":
       stderr(`${event.input}: 发生错误: ${event.error}`);
       break;
-    case 'FATAL':
+    case "FATAL":
       stderr(`${event.input}: 发生未知错误: ${event.error}`);
       break;
     default:
@@ -59,13 +61,13 @@ function pack(conf, outputConf) {
       console.log(`${outputConf.file}: 文件打包完成。`);
     })
     .catch((err) => {
-      console.error('文件打包过程出现错误：\n', err);
+      console.error("文件打包过程出现错误：\n", err);
     });
 
   // watch 调用时需要在命令行加  --watch 参数
-  if (process.argv.includes('--watch') || process.argv.includes('-w')) {
+  if (process.argv.includes("--watch") || process.argv.includes("-w")) {
     const watcher = rollup.watch(combineConf(conf, outputConf));
-    watcher.on('event', eventHandler);
+    watcher.on("event", eventHandler);
   }
 }
 
@@ -85,19 +87,19 @@ function readFiles(dirPath, callback) {
   });
 }
 
-readFiles('./src', (fileName, filePath) => {
+readFiles("./src", (fileName, filePath) => {
   const isJSFile = /([a-zA-Z0-9\s_\\.\-\(\):])+(.js)$/.test(fileName);
 
   if (isJSFile) {
     pack(
       {
         input: filePath,
-        plugins: [replace(envReplaceConfig), nodeResolve(), commonjs()],
+        plugins: [replace(envReplaceConfig), nodeResolve(), commonjs()]
       },
       {
         file: `dist/${fileName}`,
-        format: 'cjs',
-      },
+        format: "cjs"
+      }
     );
   } else {
     fs.copyFile(filePath, `dist/${fileName}`, (err) => {
