@@ -109,7 +109,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-chrome.browserAction.onClicked.addListener(() => {
+chrome.action.onClicked.addListener(() => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
     if (/.*twitter.com\/.*/.test(activeTab.url)) {
