@@ -12,7 +12,6 @@
 git clone https://github.com/posebear1990/TwitterWithBaiduTranslator.git
 cd TwitterWithBaiduTranslator
 npm install
-# 替换 .env 文件里的 appId 和 appKey ，参考 https://fanyi-api.baidu.com/
 npm run build
 ```
 

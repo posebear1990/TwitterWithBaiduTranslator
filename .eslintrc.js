@@ -3,11 +3,14 @@ module.exports = {
   env: {
     webextensions: true,
     browser: true,
-    es6: true
+    es6: true,
+  },
+  global: {
+    globalThis: true,
   },
   parserOptions: {
     ecmaVersion: 2020,
-    sourceType: "module"
+    sourceType: "module",
   },
   rules: {
     "no-plusplus": ["error", { allowForLoopAfterthoughts: true }], // 循环里允许使用++
@@ -18,9 +21,9 @@ module.exports = {
       "error",
       {
         array: false,
-        object: true
-      }
+        object: true,
+      },
     ],
-    "consistent-return": "off"
-  }
+    "consistent-return": "off",
+  },
 };

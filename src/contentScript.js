@@ -1,6 +1,7 @@
 import { retry, createElement, templateReplace } from "./utils/index";
 import template from "./constants/template";
 
+let translator = "google";
 function addTranslatorButton($timelineWrapper, $translateButton) {
   const isStatusPage = /.*twitter.com\/.*\/status\/.*/.test(window.location.href);
 
@@ -8,7 +9,7 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
     ...$timelineWrapper.querySelectorAll(
       `div[aria-label] article[role=article]
       div[lang]:not([data-has-translator=true]):not([lang^=zh])`
-    )
+    ),
   ];
 
   if (!tweetWrapperList.length) {
@@ -37,12 +38,15 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
   });
 }
 
-function init() {
+async function init() {
+  const { appId, appKey } = (await chrome.storage.local.get()) ?? {};
+  translator = appId && appKey ? "baidu" : "google";
+
   const $timelineWrapper = document.querySelector(
     "main[role=main] div[data-testid=primaryColumn] section[role=region] div[aria-label] > div"
   );
   if (!$timelineWrapper?.innerText) {
-    return false;
+    throw new Error("time line is not loaded");
   }
 
   // 添加翻译按钮
@@ -82,39 +86,36 @@ function init() {
 
         const text = ($textContainer.textContent || "").split("翻译推文")[0];
         const locale =
-          $textContainer.getAttribute("lang") === "ja" ? "jp" : $textContainer.getAttribute("lang");
+          { ja: "jp", und: "auto" }[$textContainer.getAttribute("lang")] ??
+          $textContainer.getAttribute("lang");
         const localeMap = { jp: "日语", en: "英语" };
 
         $textContainer.appendChild($loading);
         isLoading = true;
-        chrome?.runtime?.sendMessage &&
+        chrome.runtime?.id &&
           chrome.runtime.sendMessage({ type: "translate", payload: { text, locale } }, (resp) => {
-            if (resp?.type === "translate-result") {
-              $loading.remove();
-              isLoading = false;
-              $button.classList.add("hide");
+            $loading.remove();
+            isLoading = false;
+            $button.classList.add("hide");
 
-              const $translateContent = createElement(
-                templateReplace(
-                  template.fromDiv,
-                  localeMap[locale] || "自动检测",
-                  resp?.payload?.translateResult
-                )
-              );
-              const $switch = $translateContent.getElementsByClassName(
-                "tt-translator-result-switch"
-              )[0];
-              $switch.style.color = buttonColor;
+            const $translateContent = createElement(
+              templateReplace(
+                template.fromDiv,
+                translator,
+                localeMap[locale] || "自动检测",
+                resp?.payload?.translateResult
+              )
+            );
+            const $switch = $translateContent.getElementsByClassName(
+              "tt-translator-result-switch"
+            )[0];
+            $switch.style.color = buttonColor;
 
-              $switch.addEventListener("click", () => {
-                $button.classList.remove("hide");
-                $translateContent.remove();
-              });
-              $textContainer.appendChild($translateContent);
-            } else if (resp?.type === "translate-error") {
-              $loading.remove();
-              isLoading = false;
-            }
+            $switch.addEventListener("click", () => {
+              $button.classList.remove("hide");
+              $translateContent.remove();
+            });
+            $textContainer.appendChild($translateContent);
           });
       }
     },
@@ -124,16 +125,10 @@ function init() {
   return true;
 }
 
-chrome.storage.local.get("enable", (resp) => {
-  const isEnable = resp.enable;
-
-  if (isEnable) {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.type === "url-change") {
-        retry(init, 1, 15);
-      }
-    });
-
+chrome.runtime.onMessage.addListener((request, _sender) => {
+  if (request.type === "url-change") {
     retry(init, 1, 15);
   }
 });
+
+retry(init, 0.5, 15);

@@ -1,0 +1,61 @@
+.tt-popup {
+  padding: 20px;
+  margin: 0;
+  color: #5a5a5a;
+}
+.tt-popup-title {
+  font-size: 16px;
+  font-weight: 400;
+  margin-top: 0;
+  color: #1c1c1c;
+}
+
+.tt-popup-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.tt-popup-form-input {
+  width: 250px;
+  margin-top: 8px;
+  background: #f1f1f1;
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+  padding-right: 40px;
+  color: #5a5a5a;
+  font-size: 12px;
+}
+
+.tt-popup-form-label .loader {
+  right: 40px;
+  position: absolute;
+  margin-top: -20px;
+  display: none;
+}
+
+.tt-popup-form-label .check-icon {
+  scale: 0.4;
+  right: 0;
+  position: absolute;
+  margin-top: -55px;
+  display: none;
+}
+
+.tt-popup-form-tips {
+  font-size: 11px;
+  list-style-type: none;
+  padding-inline-start: 0;
+  margin-bottom: 0;
+}
+
+.tt-popup-form-tips li {
+  margin-top: 4px;
+}
+
+.tt-popup-form-tips li a {
+  color: #265dc7;
+  text-decoration: none;
+}

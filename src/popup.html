@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./popup.css" />
+    <link rel="stylesheet" href="./loader.css" />
+    <link rel="stylesheet" href="./success.css" />
+  </head>
+  <body class="tt-popup">
+    <h1 class="tt-popup-title">百度翻译 API 配置</h1>
+    <form class="tt-popup-form">
+      <label class="tt-popup-form-label">
+        APP ID
+        <input class="tt-popup-form-input" name="appId" />
+        <div class="loader"></div>
+        <div class="check-icon">
+          <span class="icon-line line-tip"></span>
+          <span class="icon-line line-long"></span>
+        </div>
+      </label>
+      <label class="tt-popup-form-label">
+        密钥
+        <input class="tt-popup-form-input" type="password" name="appKey" />
+        <div class="loader"></div>
+        <div class="check-icon">
+          <span class="icon-line line-tip"></span>
+          <span class="icon-line line-long"></span>
+        </div>
+      </label>
+
+      <ul class="tt-popup-form-tips">
+        <li>
+          具体的配置方法，可以参考<a
+            href="https://www.bilibili.com/video/BV1sP4y1m7Ph/?share_source=copy_web&vd_source=2d7b44cd14f509ef2e271c8d639ae245&t=133"
+            target="_blank"
+            >本视频</a
+          >
+          ❤
+        </li>
+        <li>如果配置留空，将使用 <b>Google 翻译</b>作为默认的翻译引擎</li>
+      </ul>
+    </form>
+
+    <script src="./popup.js" type="module"></script>
+  </body>
+</html>

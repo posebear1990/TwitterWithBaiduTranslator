@@ -2,22 +2,27 @@ import md5 from "blueimp-md5";
 import config from "./constants/config";
 import { randomString, stringifyQueryParameter, retry } from "./utils/index";
 
+const { googleTranslatorAPI, baiduTranslatorAPI } = config;
+
+async function init() {
+  const { appId, appKey } = (await chrome.storage.local.get()) ?? {};
+  globalThis.config = { appId, appKey, translator: appId && appKey ? "baidu" : "google" };
+}
+
 function generateSignature({ appid, q, salt }, appkey) {
   return md5(`${appid}${q}${salt}${appkey}`);
 }
 
-const translator = config.appid ? "baidu" : "google";
-
 async function translate(text, locale) {
   let url = "";
-  if (translator === "google") {
+  if (globalThis.config?.translator === "google") {
     url =
-      config.googleTranslatorAPI +
+      googleTranslatorAPI +
       stringifyQueryParameter({
         q: text,
         tl: "zh_CN",
         sl: "auto",
-        client: "dict-chrome-ex"
+        client: "dict-chrome-ex",
       });
   } else {
     const salt = randomString(5);
@@ -25,24 +30,28 @@ async function translate(text, locale) {
       q: text,
       from: locale,
       to: "zh",
-      appid: config.appid,
-      salt
+      appid: globalThis.config?.appId,
+      salt,
     };
-    params.sign = generateSignature(params, config.appkey);
-    url = `${config.baiduTranslatorAPI}?${stringifyQueryParameter(params)}`;
+    params.sign = generateSignature(params, globalThis.config?.appKey);
+    url = `${baiduTranslatorAPI}?${stringifyQueryParameter(params)}`;
   }
 
   const response = await fetch(url, {
-    method: "GET"
+    method: "GET",
   });
 
   const resp = await response.json();
 
-  if (resp.error_code) {
+  if (resp.error_code === "52003") {
+    return "百度翻译 API 配置错误，请检查 API 配置";
+  } else if (resp.error_code === "54004") {
+    return "百度翻译 API 余额不足，请确认账户余额";
+  } else if (resp.error_code) {
     return Promise.reject(new Error("translate result error!"));
   }
 
-  if (translator === "google") {
+  if (globalThis.config?.translator === "google") {
     return resp[0]
       .map((item) => item[0])
       .filter((item) => typeof item === "string")
@@ -52,7 +61,19 @@ async function translate(text, locale) {
   return resp.trans_result.map((item) => item.dst).join("\n");
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+function updateAllTabsConfig() {
+  chrome.tabs.query({ url: "*://*.twitter.com/*" }, (tabs) => {
+    tabs.forEach((item) => {
+      chrome.tabs.sendMessage(item.id, {
+        type: "url-change",
+      });
+    });
+  });
+}
+
+init();
+
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request?.type === "translate") {
     const { text, locale = "auto" } = request?.payload || {};
 
@@ -76,16 +97,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({
           type: "translate-result",
           payload: {
-            translateResult: resp
-          }
+            translateResult: resp,
+          },
         });
       })
       .catch((error) => {
         sendResponse({
           type: "translate-error",
-          payload: error
+          payload: {
+            translateResult: "发生错误，错误信息为" + error.toString(),
+          },
         });
       });
+  }
+
+  if (request?.type === "config-update") {
+    init();
+    updateAllTabsConfig();
   }
 
   return true;
@@ -94,50 +122,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.url) {
     chrome.tabs.sendMessage(tabId, {
-      type: "url-change"
+      type: "url-change",
     });
   }
 });
-
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({ enable: true });
-
-  chrome.tabs.query({ url: "*://*.twitter.com/*", currentWindow: true }, (tabs) => {
-    tabs.forEach((item) => {
-      chrome.tabs.reload(item.id);
-    });
-  });
+  updateAllTabsConfig();
 });
 
-chrome.action.onClicked.addListener(() => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const activeTab = tabs[0];
-    if (/.*twitter.com\/.*/.test(activeTab.url)) {
-      chrome.storage.local.get("enable", (resp) => {
-        chrome.storage.local.set({ enable: !resp.enable });
-        chrome.browserAction.setIcon({
-          path: resp.enable ? "images/main_logo_disabled.png" : "images/main_logo_128.png"
-        });
-        chrome.tabs.reload(activeTab.id);
-      });
-    }
-  });
-});
-
-let isActived = false;
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
     if (/.*twitter.com\/.*/.test(activeTab.url)) {
-      isActived = true;
-      chrome.storage.local.get("enable", (resp) => {
-        chrome.browserAction.setIcon({
-          path: resp.enable ? "images/main_logo_128.png" : "images/main_logo_disabled.png"
-        });
-      });
-    } else if (isActived) {
-      isActived = false;
-      chrome.browserAction.setIcon({ path: "images/main_logo_disabled.png" });
+      chrome.action.setIcon({ path: "images/main_logo_128.png" });
+    } else {
+      chrome.action.setIcon({ path: "images/main_logo_disabled.png" });
     }
   });
 });
