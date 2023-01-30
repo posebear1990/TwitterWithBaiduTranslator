@@ -28,7 +28,7 @@ async function translate(text, locale) {
     const salt = randomString(5);
     const params = {
       q: text,
-      from: locale,
+      from: "auto",
       to: "zh",
       appid: globalThis.config?.appId,
       salt,

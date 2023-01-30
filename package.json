@@ -1,6 +1,6 @@
 {
   "name": "twitter-with-baidu-translator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "一款显著提高日推（Twitter）刷推体验的 Chrome 插件。\n针对日语推文，采用百度翻译代替默认的 Google 翻译，大幅提高日语翻译质量。",
   "scripts": {
     "build": "rm -rf dist && mkdir dist && cp -r src/assest/* dist && node rollup.js",
@@ -22,8 +22,6 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-node-resolve": "^14.1.0",
-    "@rollup/plugin-replace": "^4.0.0",
-    "dotenv": "^16.0.3",
     "eslint": "^8.24.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",

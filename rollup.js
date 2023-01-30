@@ -2,32 +2,17 @@
 /* eslint-disable import/no-extraneous-dependencies  */
 const fs = require("fs");
 const path = require("path");
-const dotenv = require("dotenv");
 const rollup = require("rollup");
 const { nodeResolve } = require("@rollup/plugin-node-resolve");
 const commonjs = require("@rollup/plugin-commonjs");
-const replace = require("@rollup/plugin-replace");
-
-const env = dotenv.config();
-
-const envReplaceConfig = {
-  preventAssignment: true
-};
-Object.keys(env.parsed).forEach((key) => {
-  envReplaceConfig[`process.env.${key}`] = `'${env.parsed[key]}'`;
-});
-
-if (/.*appid$/.test(process.env.TT_APP_ID)) {
-  throw new Error("请正确配置环境变量：修改根目录的 .env 文件");
-}
 
 function combineConf(conf, outputConf) {
   return {
     ...conf,
     output: outputConf,
     watch: {
-      incude: "src/"
-    }
+      incude: "src/",
+    },
   };
 }
 
@@ -94,11 +79,11 @@ readFiles("./src", (fileName, filePath) => {
     pack(
       {
         input: filePath,
-        plugins: [replace(envReplaceConfig), nodeResolve(), commonjs()]
+        plugins: [nodeResolve(), commonjs()],
       },
       {
         file: `dist/${fileName}`,
-        format: "cjs"
+        format: "cjs",
       }
     );
   } else {
