@@ -5,7 +5,7 @@ export default {
                   `/images/{0}_logo.png`
                 )}" /> </a><span class="tt-translator-result-switch" role="button">翻译自 {1}</span>
               </div>
-              <div class="tt-translator-result">{2}</div>
+              <textarea class="tt-translator-result" readonly>{2}</textarea>
             </div>`,
   translateButton:
     '<div class="tt-translator-button" role="button"><span class="tt-translator-content">翻译推文</span></div>',
