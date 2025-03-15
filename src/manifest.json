@@ -1,6 +1,6 @@
 {
   "name": "推特翻译熊 - Twitter with Baidu Translator",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "一款显著提高日推（Twitter）刷推体验的 Chrome 插件。\n针对日语推文，采用百度翻译代替默认的 Google 翻译，大幅提高日语翻译质量。",
   "permissions": ["storage", "activeTab", "webRequest", "tabs"],
   "background": {
