@@ -61,6 +61,26 @@ async function init() {
   });
   observer.observe($timelineWrapper, { childList: true });
 
+  // 监听导航：推荐/关注切换
+  const tabElement = document.querySelector('main[role="main"] nav[role="navigation"] div[role="tablist"] a[role="tab"]');
+  if (tabElement) {
+    const tabObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-selected') {
+          observer.disconnect();
+          tabObserver.disconnect();
+          retry(init, 1, 15);
+        }
+      });
+    });
+
+    tabObserver.observe(tabElement, {
+      attributes: true,
+      attributeFilter: ['aria-selected']
+    });
+  }
+
+
   // 添加翻译按钮响应事件
   if ($timelineWrapper.getAttribute("data-is-event-ready") === "true") {
     return true;
