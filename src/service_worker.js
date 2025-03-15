@@ -62,7 +62,7 @@ async function translate(text, locale) {
 }
 
 function updateAllTabsConfig() {
-  chrome.tabs.query({ url: "*://*.twitter.com/*" }, (tabs) => {
+  chrome.tabs.query({ url: "*://*.x.com/*" }, (tabs) => {
     tabs.forEach((item) => {
       chrome.tabs.sendMessage(item.id, {
         type: "url-change",
@@ -133,7 +133,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
-    if (/.*twitter.com\/.*/.test(activeTab.url)) {
+    if (/.*x.com\/.*/.test(activeTab.url)) {
       chrome.action.setIcon({ path: "images/main_logo_128.png" });
     } else {
       chrome.action.setIcon({ path: "images/main_logo_disabled.png" });

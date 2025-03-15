@@ -3,7 +3,7 @@ import template from "./constants/template";
 
 let translator = "google";
 function addTranslatorButton($timelineWrapper, $translateButton) {
-  const isStatusPage = /.*twitter.com\/.*\/status\/.*/.test(window.location.href);
+  const isStatusPage = /.*x.com\/.*\/status\/.*/.test(window.location.href);
 
   let tweetWrapperList = [
     ...$timelineWrapper.querySelectorAll(
@@ -50,11 +50,9 @@ async function init() {
   }
 
   // 添加翻译按钮
+  const $aTag = document.querySelector('a[href="/i/keyboard_shortcuts"]');
   const $translateButton = createElement(template.translateButton);
-  const buttonColor =
-    getComputedStyle(document.querySelector('header[role="banner"] a[href="/compose/tweet"]'))?.[
-      "background-color"
-    ] || "rgb(29, 161, 242)";
+  const buttonColor = $aTag ? getComputedStyle($aTag).color : "rgb(29, 161, 242)";
   $translateButton.style.color = buttonColor;
 
   addTranslatorButton($timelineWrapper, $translateButton);
@@ -84,7 +82,7 @@ async function init() {
         $loading.getElementsByClassName("tt-translator-loading-front")[0].style.stroke =
           buttonColor;
 
-        const text = ($textContainer.textContent || "").split("翻译推文")[0];
+        const text = ($textContainer.textContent || "").split("翻译帖子")[0];
         const locale =
           { ja: "jp", und: "auto" }[$textContainer.getAttribute("lang")] ??
           $textContainer.getAttribute("lang");
@@ -98,10 +96,11 @@ async function init() {
             isLoading = false;
             $button.classList.add("hide");
 
+            const theme = getComputedStyle(document.body).colorScheme === 'dark' ? 'dark' : 'light';
             const $translateContent = createElement(
               templateReplace(
                 template.fromDiv,
-                translator,
+                chrome.runtime.getURL(`/images/${translator}_logo_${theme}.png`),
                 localeMap[locale] || "自动检测",
                 resp?.payload?.translateResult
               )

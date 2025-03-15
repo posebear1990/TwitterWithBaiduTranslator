@@ -28,6 +28,8 @@
 
 .tt-translator-result {
   white-space: pre-line;
+  font-size: unset;
+  font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 textarea.tt-translator-result {

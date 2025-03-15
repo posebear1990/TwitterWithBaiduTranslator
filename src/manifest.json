@@ -8,13 +8,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.twitter.com/*"],
+      "matches": ["https://*.x.com/*"],
       "js": ["contentScript.js"],
       "css": ["style.css"]
     }
   ],
   "externally_connectable": {
-    "matches": ["https://*.twitter.com/*"]
+    "matches": ["https://*.x.com/*"]
   },
   "icons": {
     "16": "images/main_logo_16.png",
@@ -35,7 +35,7 @@
   },
   "content_security_policy": {},
   "host_permissions": [
-    "https://*.twitter.com/*",
+    "https://*.x.com/*",
     "https://fanyi-api.baidu.com/*",
     "https://translate.googleapis.com/translate_a/single"
   ]
