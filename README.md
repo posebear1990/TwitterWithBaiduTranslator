@@ -1,6 +1,13 @@
 # TwitterWithBaiduTranslator
 
-推特翻译熊 - Twitter with Baidu Translator 是一款显著提高日推（Twitter）刷推体验的 Chrome 插件。 针对日语推文，采用百度翻译代替默认的 Google 翻译，大幅提高日语翻译质量。
+推特翻译熊 - Twitter with Baidu Translator 是一款显著提高日推（Twitter）刷推体验的 Chrome 插件。  
+现在支持三类翻译引擎：
+
+- Google Translate（默认）
+- Baidu Translate（可配置 APP ID / 密钥）
+- LLM API（支持 OpenAI、Anthropic、Gemini、OpenRouter、DeepSeek、Groq、SiliconFlow）
+
+并支持在插件弹窗中选择目标翻译语言（默认简体中文）。
 
 ## 安装
 

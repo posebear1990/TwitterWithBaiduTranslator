@@ -2,15 +2,44 @@ import { retry, createElement, templateReplace } from "./utils/index";
 import template from "./constants/template";
 
 let translator = "google";
+let targetLanguage = "zh-CN";
+function getTranslatorFromStorage(storage = {}) {
+  if (storage.translator) {
+    return storage.translator;
+  }
+
+  return storage.appId && storage.appKey ? "baidu" : "google";
+}
+
+function getProviderLogoPath(provider, theme) {
+  if (["google", "baidu"].includes(provider)) {
+    return chrome.runtime.getURL(`/images/${provider}_logo_${theme}.png`);
+  }
+
+  return chrome.runtime.getURL("/images/main_logo_32.png");
+}
+
+function shouldHideTranslatorButton(tweetLang = "") {
+  if (!targetLanguage.toLowerCase().startsWith("zh")) {
+    return false;
+  }
+
+  return tweetLang.toLowerCase().startsWith("zh");
+}
+
 function addTranslatorButton($timelineWrapper, $translateButton) {
   const isStatusPage = /.*x.com\/.*\/status\/.*/.test(window.location.href);
 
   let tweetWrapperList = [
     ...$timelineWrapper.querySelectorAll(
       `div[aria-label] article[role=article]
-      div[lang]:not([data-has-translator=true]):not([lang^=zh])`
+      div[lang]:not([data-has-translator=true])`
     ),
   ];
+
+  tweetWrapperList = tweetWrapperList.filter(
+    ($tweetWrapper) => !shouldHideTranslatorButton($tweetWrapper.getAttribute("lang") || "")
+  );
 
   if (!tweetWrapperList.length) {
     return;
@@ -39,8 +68,9 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
 }
 
 async function init() {
-  const { appId, appKey } = (await chrome.storage.local.get()) ?? {};
-  translator = appId && appKey ? "baidu" : "google";
+  const storage = (await chrome.storage.local.get()) ?? {};
+  translator = getTranslatorFromStorage(storage);
+  targetLanguage = storage.targetLanguage || "zh-CN";
 
   const $timelineWrapper = document.querySelector(
     "main[role=main] div[data-testid=primaryColumn] section[role=region] div[aria-label] > div"
@@ -117,12 +147,17 @@ async function init() {
             $button.classList.add("hide");
 
             const theme = getComputedStyle(document.body).colorScheme === 'dark' ? 'dark' : 'light';
+            const provider = resp?.payload?.provider || translator;
+            const providerLabel = resp?.payload?.providerLabel || "翻译引擎";
+            const sourceLabel = resp?.payload?.sourceLabel || localeMap[locale] || "自动检测";
+            const targetLabel = resp?.payload?.targetLabel || "目标语言";
+            const translateResult = resp?.payload?.translateResult || "翻译失败，请稍后重试";
             const $translateContent = createElement(
               templateReplace(
                 template.fromDiv,
-                chrome.runtime.getURL(`/images/${translator}_logo_${theme}.png`),
-                localeMap[locale] || "自动检测",
-                resp?.payload?.translateResult
+                getProviderLogoPath(provider, theme),
+                `${providerLabel} / ${sourceLabel} -> ${targetLabel}`,
+                translateResult
               )
             );
             const $switch = $translateContent.getElementsByClassName(

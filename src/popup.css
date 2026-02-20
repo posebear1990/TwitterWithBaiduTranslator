@@ -2,6 +2,7 @@
   padding: 20px;
   margin: 0;
   color: #5a5a5a;
+  min-width: 290px;
 }
 .tt-popup-title {
   font-size: 16px;
@@ -12,36 +13,45 @@
 
 .tt-popup-form-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 10px;
   font-weight: 600;
 }
 
 .tt-popup-form-input {
-  width: 250px;
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 8px;
   background: #f1f1f1;
   border: none;
   border-radius: 5px;
   padding: 8px;
-  padding-right: 40px;
   color: #5a5a5a;
   font-size: 12px;
 }
 
-.tt-popup-form-label .loader {
-  right: 40px;
-  position: absolute;
-  margin-top: -20px;
+.tt-popup-form-group {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.tt-popup-form-group.is-hidden {
   display: none;
 }
 
-.tt-popup-form-label .check-icon {
-  scale: 0.4;
-  right: 0;
-  position: absolute;
-  margin-top: -55px;
-  display: none;
+.tt-popup-form-save-status {
+  color: #00a36c;
+  font-size: 11px;
+  margin: 2px 0 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tt-popup-form-save-status.is-visible {
+  opacity: 1;
 }
 
 .tt-popup-form-tips {

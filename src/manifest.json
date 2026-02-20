@@ -37,6 +37,13 @@
   "host_permissions": [
     "https://*.x.com/*",
     "https://fanyi-api.baidu.com/*",
-    "https://translate.googleapis.com/translate_a/single"
+    "https://translate.googleapis.com/translate_a/single",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://openrouter.ai/*",
+    "https://api.deepseek.com/*",
+    "https://api.groq.com/*",
+    "https://api.siliconflow.cn/*"
   ]
 }
