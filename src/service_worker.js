@@ -5,7 +5,7 @@ import { randomString, stringifyQueryParameter, retry } from "./utils/index";
 const { googleTranslatorAPI, baiduTranslatorAPI, llmAPIs } = config;
 
 const DEFAULT_LLM_PROVIDER = "openai";
-const DEFAULT_TARGET_LANGUAGE = "zh-CN";
+const DEFAULT_UI_LANGUAGE = "zh";
 const PROVIDER_LABEL_MAP = {
   google: "Google Translate",
   baidu: "Baidu Translate",
@@ -26,89 +26,117 @@ const LLM_DEFAULT_MODEL_MAP = {
   groq: "llama-3.3-70b-versatile",
   siliconflow: "Qwen/Qwen2.5-7B-Instruct",
 };
-const LOCALE_NAME_MAP = {
-  auto: "自动检测",
-  und: "自动检测",
-  jp: "日语",
-  ja: "日语",
-  en: "英语",
-  ko: "韩语",
-  fr: "法语",
-  de: "德语",
-  es: "西班牙语",
-  id: "印尼语",
-  tr: "土耳其语",
-  pt: "葡萄牙语",
-  ar: "阿拉伯语",
-  hi: "印地语",
+const SOURCE_LANGUAGE_MAP = {
+  auto: { zh: "自动检测", en: "Auto" },
+  und: { zh: "自动检测", en: "Auto" },
+  jp: { zh: "日语", en: "Japanese" },
+  ja: { zh: "日语", en: "Japanese" },
+  en: { zh: "英语", en: "English" },
+  ko: { zh: "韩语", en: "Korean" },
+  fr: { zh: "法语", en: "French" },
+  de: { zh: "德语", en: "German" },
+  es: { zh: "西班牙语", en: "Spanish" },
+  id: { zh: "印尼语", en: "Indonesian" },
+  tr: { zh: "土耳其语", en: "Turkish" },
+  pt: { zh: "葡萄牙语", en: "Portuguese" },
+  ar: { zh: "阿拉伯语", en: "Arabic" },
+  hi: { zh: "印地语", en: "Hindi" },
 };
 const TARGET_LANGUAGE_MAP = {
   "zh-CN": {
-    label: "简体中文",
+    labels: { zh: "简体中文", en: "Simplified Chinese" },
     google: "zh-CN",
     baidu: "zh",
   },
   "zh-TW": {
-    label: "繁体中文",
+    labels: { zh: "繁体中文", en: "Traditional Chinese" },
     google: "zh-TW",
     baidu: "cht",
   },
   en: {
-    label: "英语",
+    labels: { zh: "英语", en: "English" },
     google: "en",
     baidu: "en",
   },
   ja: {
-    label: "日语",
+    labels: { zh: "日语", en: "Japanese" },
     google: "ja",
     baidu: "jp",
   },
   ko: {
-    label: "韩语",
+    labels: { zh: "韩语", en: "Korean" },
     google: "ko",
     baidu: "kor",
   },
   fr: {
-    label: "法语",
+    labels: { zh: "法语", en: "French" },
     google: "fr",
     baidu: "fra",
   },
   de: {
-    label: "德语",
+    labels: { zh: "德语", en: "German" },
     google: "de",
     baidu: "de",
   },
   es: {
-    label: "西班牙语",
+    labels: { zh: "西班牙语", en: "Spanish" },
     google: "es",
     baidu: "spa",
   },
   id: {
-    label: "印尼语",
+    labels: { zh: "印尼语", en: "Indonesian" },
     google: "id",
     baidu: "id",
   },
   tr: {
-    label: "土耳其语",
+    labels: { zh: "土耳其语", en: "Turkish" },
     google: "tr",
     baidu: "tr",
   },
   pt: {
-    label: "葡萄牙语",
+    labels: { zh: "葡萄牙语", en: "Portuguese" },
     google: "pt",
     baidu: "pt",
   },
   ar: {
-    label: "阿拉伯语",
+    labels: { zh: "阿拉伯语", en: "Arabic" },
     google: "ar",
     baidu: "ara",
   },
   hi: {
-    label: "印地语",
+    labels: { zh: "印地语", en: "Hindi" },
     google: "hi",
     baidu: "hi",
   },
 };
+const MESSAGE_MAP = {
+  zh: {
+    llmApiKeyRequired: "请先在插件设置中填写 LLM API Key",
+    providerHttpError: "{provider} API 调用失败（HTTP {status}）",
+    providerEmpty: "{provider} 返回内容为空",
+    baiduConfigError: "百度翻译 API 配置错误，请检查 API 配置",
+    baiduBalanceError: "百度翻译 API 余额不足，请确认账户余额",
+    baiduCredentialRequired: "请先在插件设置中填写 Baidu APP ID 和密钥",
+    translateErrorPrefix: "发生错误，错误信息为",
+  },
+  en: {
+    llmApiKeyRequired: "Please fill in LLM API key in plugin settings first.",
+    providerHttpError: "{provider} API request failed (HTTP {status})",
+    providerEmpty: "{provider} returned an empty result",
+    baiduConfigError: "Baidu Translate API config is invalid. Please check APP ID and key.",
+    baiduBalanceError: "Baidu Translate API balance is insufficient.",
+    baiduCredentialRequired: "Please fill in Baidu APP ID and key in plugin settings first.",
+    translateErrorPrefix: "Error: ",
+  },
+};
+
+function detectUILanguage(locale = "") {
+  return locale.toLowerCase().startsWith("zh") ? "zh" : "en";
+}
+
+function getDefaultTargetLanguageFromLocale(locale = "") {
+  return detectUILanguage(locale) === "zh" ? "zh-CN" : "en";
+}
 
 function getTranslatorFromStorage(storage = {}) {
   if (storage.translator) {
@@ -118,17 +146,83 @@ function getTranslatorFromStorage(storage = {}) {
   return storage.appId && storage.appKey ? "baidu" : "google";
 }
 
+function getMessage(key, uiLanguage, params = {}) {
+  const language = uiLanguage === "en" ? "en" : "zh";
+  const template = MESSAGE_MAP[language][key] || MESSAGE_MAP.zh[key] || "";
+  return template.replace(/\{(\w+)\}/g, (_match, token) => params[token] || "");
+}
+
+function localeToName(locale = "auto", uiLanguage = DEFAULT_UI_LANGUAGE) {
+  const language = uiLanguage === "en" ? "en" : "zh";
+  return SOURCE_LANGUAGE_MAP[locale]?.[language] || SOURCE_LANGUAGE_MAP.auto[language] || locale;
+}
+
+function getTargetLanguageConfig(targetLanguage) {
+  return TARGET_LANGUAGE_MAP[targetLanguage] || TARGET_LANGUAGE_MAP["zh-CN"];
+}
+
+function getTargetLanguageLabel(targetLanguage, uiLanguage = DEFAULT_UI_LANGUAGE) {
+  const language = uiLanguage === "en" ? "en" : "zh";
+  const configItem = getTargetLanguageConfig(targetLanguage);
+  return configItem.labels[language] || configItem.labels.zh;
+}
+
+function createProviderErrorMessage(provider, status, uiLanguage) {
+  return getMessage("providerHttpError", uiLanguage, {
+    provider: PROVIDER_LABEL_MAP[provider] || provider,
+    status: String(status),
+  });
+}
+
+function createLLMTranslatePrompt(
+  text,
+  locale = "auto",
+  targetLanguage = "zh-CN",
+  uiLanguage = DEFAULT_UI_LANGUAGE
+) {
+  const sourceLabel = localeToName(locale, uiLanguage);
+  const targetLabel = getTargetLanguageLabel(targetLanguage, uiLanguage);
+
+  if (uiLanguage === "en") {
+    return [
+      `Please translate the following text into ${targetLabel}.`,
+      "Requirements:",
+      "1. Output translation only, without explanations or prefixes/suffixes.",
+      "2. Preserve tone, paragraphs, lists, emoji, @mentions, and #hashtags.",
+      "3. Keep URLs unchanged.",
+      `Source language: ${sourceLabel}`,
+      "Text:",
+      text,
+    ].join("\n");
+  }
+
+  return [
+    `请将下面文本翻译成${targetLabel}。`,
+    "要求：",
+    "1. 只输出译文，不要附加解释、注释或前后缀。",
+    "2. 保留原文的语气、分段、列表、表情和 @提及/#话题。",
+    "3. URL 保持不变。",
+    `原文语言：${sourceLabel}`,
+    "原文：",
+    text,
+  ].join("\n");
+}
+
 async function init() {
   const storage = (await chrome.storage.local.get()) ?? {};
+  const browserLanguage = globalThis.navigator?.language || "zh-CN";
+  const uiLanguage = detectUILanguage(browserLanguage);
   const llmProvider = storage.llmProvider || DEFAULT_LLM_PROVIDER;
   const targetLanguage = TARGET_LANGUAGE_MAP[storage.targetLanguage]
     ? storage.targetLanguage
-    : DEFAULT_TARGET_LANGUAGE;
+    : getDefaultTargetLanguageFromLocale(browserLanguage);
+
   globalThis.config = {
     appId: storage.appId ?? "",
     appKey: storage.appKey ?? "",
     translator: getTranslatorFromStorage(storage),
     targetLanguage,
+    uiLanguage,
     llmProvider,
     llmApiKey: storage.llmApiKey ?? "",
     llmModel: storage.llmModel || LLM_DEFAULT_MODEL_MAP[llmProvider],
@@ -137,28 +231,6 @@ async function init() {
 
 function generateSignature({ appid, q, salt }, appkey) {
   return md5(`${appid}${q}${salt}${appkey}`);
-}
-
-function localeToName(locale = "auto") {
-  return LOCALE_NAME_MAP[locale] || locale;
-}
-
-function getTargetLanguageConfig(targetLanguage = DEFAULT_TARGET_LANGUAGE) {
-  return TARGET_LANGUAGE_MAP[targetLanguage] || TARGET_LANGUAGE_MAP[DEFAULT_TARGET_LANGUAGE];
-}
-
-function createLLMTranslatePrompt(text, locale = "auto", targetLanguage = DEFAULT_TARGET_LANGUAGE) {
-  const targetLabel = getTargetLanguageConfig(targetLanguage).label;
-  return [
-    `请将下面文本翻译成${targetLabel}。`,
-    "要求：",
-    "1. 只输出译文，不要附加解释、注释或前后缀。",
-    "2. 保留原文的语气、分段、列表、表情和 @提及/#话题。",
-    "3. URL 保持不变。",
-    `原文语言：${localeToName(locale)}`,
-    "原文：",
-    text,
-  ].join("\n");
 }
 
 function parseOpenAICompatibleResponse(payload) {
@@ -199,11 +271,7 @@ function parseGeminiResponse(payload) {
     .trim();
 }
 
-function createProviderErrorMessage(provider, status) {
-  return `${PROVIDER_LABEL_MAP[provider] || provider} API 调用失败（HTTP ${status}）`;
-}
-
-async function translateByOpenAICompatible(text, locale, provider, targetLanguage) {
+async function translateByOpenAICompatible(text, locale, provider, targetLanguage, uiLanguage) {
   const apiKey = globalThis.config?.llmApiKey;
   const model = globalThis.config?.llmModel || LLM_DEFAULT_MODEL_MAP[provider];
   const url = llmAPIs[provider];
@@ -224,26 +292,32 @@ async function translateByOpenAICompatible(text, locale, provider, targetLanguag
         },
         {
           role: "user",
-          content: createLLMTranslatePrompt(text, locale, targetLanguage),
+          content: createLLMTranslatePrompt(text, locale, targetLanguage, uiLanguage),
         },
       ],
     }),
   });
 
   if (!response.ok) {
-    return Promise.reject(new Error(createProviderErrorMessage(provider, response.status)));
+    return Promise.reject(new Error(createProviderErrorMessage(provider, response.status, uiLanguage)));
   }
 
   const payload = await response.json();
   const result = parseOpenAICompatibleResponse(payload);
   if (!result) {
-    return Promise.reject(new Error(`${PROVIDER_LABEL_MAP[provider]} 返回内容为空`));
+    return Promise.reject(
+      new Error(
+        getMessage("providerEmpty", uiLanguage, {
+          provider: PROVIDER_LABEL_MAP[provider] || provider,
+        })
+      )
+    );
   }
 
   return result;
 }
 
-async function translateByAnthropic(text, locale, targetLanguage) {
+async function translateByAnthropic(text, locale, targetLanguage, uiLanguage) {
   const provider = "anthropic";
   const apiKey = globalThis.config?.llmApiKey;
   const model = globalThis.config?.llmModel || LLM_DEFAULT_MODEL_MAP[provider];
@@ -259,24 +333,32 @@ async function translateByAnthropic(text, locale, targetLanguage) {
       max_tokens: 2048,
       temperature: 0,
       system: "You are a professional translator. Output translation only.",
-      messages: [{ role: "user", content: createLLMTranslatePrompt(text, locale, targetLanguage) }],
+      messages: [
+        { role: "user", content: createLLMTranslatePrompt(text, locale, targetLanguage, uiLanguage) },
+      ],
     }),
   });
 
   if (!response.ok) {
-    return Promise.reject(new Error(createProviderErrorMessage(provider, response.status)));
+    return Promise.reject(new Error(createProviderErrorMessage(provider, response.status, uiLanguage)));
   }
 
   const payload = await response.json();
   const result = parseAnthropicResponse(payload);
   if (!result) {
-    return Promise.reject(new Error(`${PROVIDER_LABEL_MAP[provider]} 返回内容为空`));
+    return Promise.reject(
+      new Error(
+        getMessage("providerEmpty", uiLanguage, {
+          provider: PROVIDER_LABEL_MAP[provider] || provider,
+        })
+      )
+    );
   }
 
   return result;
 }
 
-async function translateByGemini(text, locale, targetLanguage) {
+async function translateByGemini(text, locale, targetLanguage, uiLanguage) {
   const provider = "gemini";
   const apiKey = globalThis.config?.llmApiKey;
   const model = globalThis.config?.llmModel || LLM_DEFAULT_MODEL_MAP[provider];
@@ -289,44 +371,51 @@ async function translateByGemini(text, locale, targetLanguage) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: createLLMTranslatePrompt(text, locale, targetLanguage) }] }],
+      contents: [{ parts: [{ text: createLLMTranslatePrompt(text, locale, targetLanguage, uiLanguage) }] }],
       generationConfig: { temperature: 0 },
     }),
   });
 
   if (!response.ok) {
-    return Promise.reject(new Error(createProviderErrorMessage(provider, response.status)));
+    return Promise.reject(new Error(createProviderErrorMessage(provider, response.status, uiLanguage)));
   }
 
   const payload = await response.json();
   const result = parseGeminiResponse(payload);
   if (!result) {
-    return Promise.reject(new Error(`${PROVIDER_LABEL_MAP[provider]} 返回内容为空`));
+    return Promise.reject(
+      new Error(
+        getMessage("providerEmpty", uiLanguage, {
+          provider: PROVIDER_LABEL_MAP[provider] || provider,
+        })
+      )
+    );
   }
 
   return result;
 }
 
-async function translateByLLM(text, locale, targetLanguage) {
+async function translateByLLM(text, locale, targetLanguage, uiLanguage) {
   const provider = llmAPIs[globalThis.config?.llmProvider]
     ? globalThis.config?.llmProvider
     : DEFAULT_LLM_PROVIDER;
+
   if (!globalThis.config?.llmApiKey) {
-    return "请先在插件设置中填写 LLM API Key";
+    return getMessage("llmApiKeyRequired", uiLanguage);
   }
 
   if (provider === "anthropic") {
-    return translateByAnthropic(text, locale, targetLanguage);
+    return translateByAnthropic(text, locale, targetLanguage, uiLanguage);
   }
 
   if (provider === "gemini") {
-    return translateByGemini(text, locale, targetLanguage);
+    return translateByGemini(text, locale, targetLanguage, uiLanguage);
   }
 
-  return translateByOpenAICompatible(text, locale, provider, targetLanguage);
+  return translateByOpenAICompatible(text, locale, provider, targetLanguage, uiLanguage);
 }
 
-async function translateWithGoogle(text, targetLanguage) {
+async function translateWithGoogle(text, targetLanguage, uiLanguage) {
   const target = getTargetLanguageConfig(targetLanguage);
   const url =
     googleTranslatorAPI +
@@ -341,7 +430,7 @@ async function translateWithGoogle(text, targetLanguage) {
   });
 
   if (!response.ok) {
-    return Promise.reject(new Error(createProviderErrorMessage("google", response.status)));
+    return Promise.reject(new Error(createProviderErrorMessage("google", response.status, uiLanguage)));
   }
 
   const payload = await response.json();
@@ -351,7 +440,7 @@ async function translateWithGoogle(text, targetLanguage) {
     .join("");
 }
 
-async function translateWithBaidu(text, targetLanguage) {
+async function translateWithBaidu(text, targetLanguage, uiLanguage) {
   const target = getTargetLanguageConfig(targetLanguage);
   const salt = randomString(5);
   const params = {
@@ -368,16 +457,16 @@ async function translateWithBaidu(text, targetLanguage) {
   });
 
   if (!response.ok) {
-    return Promise.reject(new Error(createProviderErrorMessage("baidu", response.status)));
+    return Promise.reject(new Error(createProviderErrorMessage("baidu", response.status, uiLanguage)));
   }
 
   const payload = await response.json();
 
   if (payload.error_code === "52003") {
-    return "百度翻译 API 配置错误，请检查 API 配置";
+    return getMessage("baiduConfigError", uiLanguage);
   }
   if (payload.error_code === "54004") {
-    return "百度翻译 API 余额不足，请确认账户余额";
+    return getMessage("baiduBalanceError", uiLanguage);
   }
   if (payload.error_code) {
     return Promise.reject(new Error("translate result error!"));
@@ -388,11 +477,13 @@ async function translateWithBaidu(text, targetLanguage) {
 
 async function translate(text, locale) {
   const provider = globalThis.config?.translator || "google";
-  const targetLanguage = globalThis.config?.targetLanguage || DEFAULT_TARGET_LANGUAGE;
-  const targetLabel = getTargetLanguageConfig(targetLanguage).label;
+  const targetLanguage = globalThis.config?.targetLanguage || "zh-CN";
+  const uiLanguage = globalThis.config?.uiLanguage || DEFAULT_UI_LANGUAGE;
+  const targetLabel = getTargetLanguageLabel(targetLanguage, uiLanguage);
+
   if (provider === "llm") {
     const llmProvider = globalThis.config?.llmProvider || DEFAULT_LLM_PROVIDER;
-    const translateResult = await translateByLLM(text, locale, targetLanguage);
+    const translateResult = await translateByLLM(text, locale, targetLanguage, uiLanguage);
     return {
       provider: llmProvider,
       providerLabel: PROVIDER_LABEL_MAP[llmProvider] || "LLM",
@@ -407,7 +498,7 @@ async function translate(text, locale) {
         provider,
         providerLabel: PROVIDER_LABEL_MAP.baidu,
         targetLabel,
-        translateResult: "请先在插件设置中填写 Baidu APP ID 和密钥",
+        translateResult: getMessage("baiduCredentialRequired", uiLanguage),
       };
     }
 
@@ -415,7 +506,7 @@ async function translate(text, locale) {
       provider,
       providerLabel: PROVIDER_LABEL_MAP.baidu,
       targetLabel,
-      translateResult: await translateWithBaidu(text, targetLanguage),
+      translateResult: await translateWithBaidu(text, targetLanguage, uiLanguage),
     };
   }
 
@@ -423,7 +514,7 @@ async function translate(text, locale) {
     provider: "google",
     providerLabel: PROVIDER_LABEL_MAP.google,
     targetLabel,
-    translateResult: await translateWithGoogle(text, targetLanguage),
+    translateResult: await translateWithGoogle(text, targetLanguage, uiLanguage),
   };
 }
 
@@ -442,6 +533,7 @@ init();
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request?.type === "translate") {
     const { text, locale = "auto" } = request?.payload || {};
+    const uiLanguage = globalThis.config?.uiLanguage || DEFAULT_UI_LANGUAGE;
 
     if (!text) {
       return;
@@ -462,7 +554,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
             translateResult: result.translateResult,
             provider: result.provider,
             providerLabel: result.providerLabel,
-            sourceLabel: localeToName(locale),
+            sourceLabel: localeToName(locale, uiLanguage),
             targetLabel: result.targetLabel,
           },
         });
@@ -471,7 +563,9 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         sendResponse({
           type: "translate-error",
           payload: {
-            translateResult: "发生错误，错误信息为" + error.toString(),
+            translateResult: `${getMessage("translateErrorPrefix", uiLanguage)}${
+              error?.message || error.toString()
+            }`,
           },
         });
       });

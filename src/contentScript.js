@@ -1,8 +1,34 @@
 import { retry, createElement, templateReplace } from "./utils/index";
-import template from "./constants/template";
+import { getTemplate } from "./constants/template";
 
 let translator = "google";
 let targetLanguage = "zh-CN";
+let uiLanguage = "zh";
+
+function detectUILanguage(locale = "") {
+  return locale.toLowerCase().startsWith("zh") ? "zh" : "en";
+}
+
+function getDefaultTargetLanguageFromLocale(locale = "") {
+  return detectUILanguage(locale) === "zh" ? "zh-CN" : "en";
+}
+
+const I18N_TEXT_MAP = {
+  zh: {
+    translatorLabel: "翻译引擎",
+    autoDetect: "自动检测",
+    translateFailed: "翻译失败，请稍后重试",
+  },
+  en: {
+    translatorLabel: "Translator",
+    autoDetect: "Auto",
+    translateFailed: "Translation failed. Please try again.",
+  },
+};
+
+function t(key) {
+  return I18N_TEXT_MAP[uiLanguage]?.[key] || I18N_TEXT_MAP.zh[key] || key;
+}
 function getTranslatorFromStorage(storage = {}) {
   if (storage.translator) {
     return storage.translator;
@@ -25,6 +51,19 @@ function shouldHideTranslatorButton(tweetLang = "") {
   }
 
   return tweetLang.toLowerCase().startsWith("zh");
+}
+
+function getTweetRawText($textContainer) {
+  const $clone = $textContainer.cloneNode(true);
+  [
+    ".tt-translator-button",
+    ".tt-translator-result-container",
+    ".tt-translator-loading-container",
+  ].forEach((selector) => {
+    $clone.querySelectorAll(selector).forEach(($node) => $node.remove());
+  });
+
+  return ($clone.textContent || "").trim();
 }
 
 function addTranslatorButton($timelineWrapper, $translateButton) {
@@ -70,7 +109,8 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
 async function init() {
   const storage = (await chrome.storage.local.get()) ?? {};
   translator = getTranslatorFromStorage(storage);
-  targetLanguage = storage.targetLanguage || "zh-CN";
+  uiLanguage = detectUILanguage(navigator.language || "zh-CN");
+  targetLanguage = storage.targetLanguage || getDefaultTargetLanguageFromLocale(navigator.language);
 
   const $timelineWrapper = document.querySelector(
     "main[role=main] div[data-testid=primaryColumn] section[role=region] div[aria-label] > div"
@@ -81,6 +121,7 @@ async function init() {
 
   // 添加翻译按钮
   const $aTag = document.querySelector('a[href="/i/keyboard_shortcuts"]');
+  const template = getTemplate(uiLanguage);
   const $translateButton = createElement(template.translateButton);
   const buttonColor = $aTag ? getComputedStyle($aTag).color : "rgb(29, 161, 242)";
   $translateButton.style.color = buttonColor;
@@ -132,11 +173,11 @@ async function init() {
         $loading.getElementsByClassName("tt-translator-loading-front")[0].style.stroke =
           buttonColor;
 
-        const text = ($textContainer.textContent || "").split("翻译帖子")[0];
+        const text = getTweetRawText($textContainer);
         const locale =
           { ja: "jp", und: "auto" }[$textContainer.getAttribute("lang")] ??
           $textContainer.getAttribute("lang");
-        const localeMap = { jp: "日语", en: "英语" };
+        const localeMap = uiLanguage === "zh" ? { jp: "日语", en: "英语" } : { jp: "Japanese", en: "English" };
 
         $textContainer.appendChild($loading);
         isLoading = true;
@@ -148,10 +189,10 @@ async function init() {
 
             const theme = getComputedStyle(document.body).colorScheme === 'dark' ? 'dark' : 'light';
             const provider = resp?.payload?.provider || translator;
-            const providerLabel = resp?.payload?.providerLabel || "翻译引擎";
-            const sourceLabel = resp?.payload?.sourceLabel || localeMap[locale] || "自动检测";
-            const targetLabel = resp?.payload?.targetLabel || "目标语言";
-            const translateResult = resp?.payload?.translateResult || "翻译失败，请稍后重试";
+            const providerLabel = resp?.payload?.providerLabel || t("translatorLabel");
+            const sourceLabel = resp?.payload?.sourceLabel || localeMap[locale] || t("autoDetect");
+            const targetLabel = resp?.payload?.targetLabel || t("autoDetect");
+            const translateResult = resp?.payload?.translateResult || t("translateFailed");
             const $translateContent = createElement(
               templateReplace(
                 template.fromDiv,
