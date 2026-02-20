@@ -521,10 +521,28 @@ async function translate(text, locale) {
 function updateAllTabsConfig() {
   chrome.tabs.query({ url: "*://*.x.com/*" }, (tabs) => {
     tabs.forEach((item) => {
-      chrome.tabs.sendMessage(item.id, {
+      safeSendTabMessage(item.id, {
         type: "url-change",
       });
     });
+  });
+}
+
+function safeSendTabMessage(tabId, payload) {
+  if (typeof tabId !== "number") {
+    return;
+  }
+
+  chrome.tabs.sendMessage(tabId, payload, () => {
+    const error = chrome.runtime.lastError;
+    if (!error) {
+      return;
+    }
+
+    // Content script may not exist yet on a tab; this is expected and safe to ignore.
+    if (error.message?.includes("Receiving end does not exist")) {
+      return;
+    }
   });
 }
 
@@ -580,8 +598,8 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url) {
-    chrome.tabs.sendMessage(tabId, {
+  if (changeInfo.url && /.*x.com\/.*/.test(changeInfo.url)) {
+    safeSendTabMessage(tabId, {
       type: "url-change",
     });
   }
