@@ -1,0 +1,128 @@
+{
+  "extName": {
+    "message": "Xwitter Translator Bear - X(Twitter) with Your Favorite Translator"
+  },
+  "extDescription": {
+    "message": "A Chrome extension for one-click X/Twitter translation with your favorite translator."
+  },
+  "popup_title": {
+    "message": "Translator Settings"
+  },
+  "translator_label": {
+    "message": "Translator"
+  },
+  "translator_google": {
+    "message": "Google Translate (Default)"
+  },
+  "translator_llm": {
+    "message": "LLM API (Mainstream Providers)"
+  },
+  "target_language_label": {
+    "message": "Target language"
+  },
+  "target_zh_cn": {
+    "message": "Simplified Chinese"
+  },
+  "target_zh_tw": {
+    "message": "Traditional Chinese"
+  },
+  "target_en": {
+    "message": "English"
+  },
+  "target_ja": {
+    "message": "Japanese"
+  },
+  "target_ko": {
+    "message": "Korean"
+  },
+  "target_fr": {
+    "message": "French"
+  },
+  "target_de": {
+    "message": "German"
+  },
+  "target_es": {
+    "message": "Spanish"
+  },
+  "target_id": {
+    "message": "Indonesian"
+  },
+  "target_tr": {
+    "message": "Turkish"
+  },
+  "target_pt": {
+    "message": "Portuguese"
+  },
+  "target_ar": {
+    "message": "Arabic"
+  },
+  "target_hi": {
+    "message": "Hindi"
+  },
+  "baidu_app_id_label": {
+    "message": "Baidu APP ID"
+  },
+  "baidu_key_label": {
+    "message": "Baidu Key"
+  },
+  "llm_provider_label": {
+    "message": "LLM provider"
+  },
+  "llm_api_key_label": {
+    "message": "API key"
+  },
+  "llm_model_label": {
+    "message": "Model (customizable)"
+  },
+  "saved_status": {
+    "message": "Saved"
+  },
+  "tip_target_language": {
+    "message": "You can choose the target language in this popup (default picks Chinese or English by browser language)."
+  },
+  "tip_google": {
+    "message": "No API setup is needed when using <b>Google</b>."
+  },
+  "tip_baidu": {
+    "message": "Fill in APP ID and key when using <b>Baidu</b>."
+  },
+  "tip_llm": {
+    "message": "Fill in provider, API key, and model when using <b>LLM API</b>."
+  },
+  "tip_mapping_issue": {
+    "message": "Due to limited testing, if any mapping configuration is incorrect, contact me: <a href=\"mailto:posebear1990@gmail.com\">posebear1990@gmail.com</a>."
+  },
+  "tip_baidu_video_prefix": {
+    "message": "Baidu setup guide:"
+  },
+  "tip_baidu_video_link": {
+    "message": "video"
+  },
+  "tip_baidu_video_suffix": {
+    "message": ""
+  },
+  "content_powered_by": {
+    "message": "By"
+  },
+  "content_translated_from": {
+    "message": "Translated from"
+  },
+  "content_translate_post": {
+    "message": "Translate post"
+  },
+  "content_translator_label": {
+    "message": "Translator"
+  },
+  "content_auto_detect": {
+    "message": "Auto"
+  },
+  "content_translate_failed": {
+    "message": "Translation failed. Please try again."
+  },
+  "source_japanese": {
+    "message": "Japanese"
+  },
+  "source_english": {
+    "message": "English"
+  }
+}

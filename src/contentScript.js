@@ -3,31 +3,13 @@ import { getTemplate } from "./constants/template";
 
 let translator = "google";
 let targetLanguage = "zh-CN";
-let uiLanguage = "zh";
-
-function detectUILanguage(locale = "") {
-  return locale.toLowerCase().startsWith("zh") ? "zh" : "en";
-}
 
 function getDefaultTargetLanguageFromLocale(locale = "") {
-  return detectUILanguage(locale) === "zh" ? "zh-CN" : "en";
+  return locale.toLowerCase().startsWith("zh") ? "zh-CN" : "en";
 }
 
-const I18N_TEXT_MAP = {
-  zh: {
-    translatorLabel: "翻译引擎",
-    autoDetect: "自动检测",
-    translateFailed: "翻译失败，请稍后重试",
-  },
-  en: {
-    translatorLabel: "Translator",
-    autoDetect: "Auto",
-    translateFailed: "Translation failed. Please try again.",
-  },
-};
-
 function t(key) {
-  return I18N_TEXT_MAP[uiLanguage]?.[key] || I18N_TEXT_MAP.zh[key] || key;
+  return chrome.i18n.getMessage(key) || key;
 }
 function getTranslatorFromStorage(storage = {}) {
   if (storage.translator) {
@@ -35,14 +17,6 @@ function getTranslatorFromStorage(storage = {}) {
   }
 
   return storage.appId && storage.appKey ? "baidu" : "google";
-}
-
-function getProviderLogoPath(provider, theme) {
-  if (["google", "baidu"].includes(provider)) {
-    return chrome.runtime.getURL(`/images/${provider}_logo_${theme}.png`);
-  }
-
-  return chrome.runtime.getURL("/images/main_logo_32.png");
 }
 
 function shouldHideTranslatorButton(tweetLang = "") {
@@ -109,7 +83,6 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
 async function init() {
   const storage = (await chrome.storage.local.get()) ?? {};
   translator = getTranslatorFromStorage(storage);
-  uiLanguage = detectUILanguage(navigator.language || "zh-CN");
   targetLanguage = storage.targetLanguage || getDefaultTargetLanguageFromLocale(navigator.language);
 
   const $timelineWrapper = document.querySelector(
@@ -121,7 +94,7 @@ async function init() {
 
   // 添加翻译按钮
   const $aTag = document.querySelector('a[href="/i/keyboard_shortcuts"]');
-  const template = getTemplate(uiLanguage);
+  const template = getTemplate();
   const $translateButton = createElement(template.translateButton);
   const buttonColor = $aTag ? getComputedStyle($aTag).color : "rgb(29, 161, 242)";
   $translateButton.style.color = buttonColor;
@@ -177,7 +150,10 @@ async function init() {
         const locale =
           { ja: "jp", und: "auto" }[$textContainer.getAttribute("lang")] ??
           $textContainer.getAttribute("lang");
-        const localeMap = uiLanguage === "zh" ? { jp: "日语", en: "英语" } : { jp: "Japanese", en: "English" };
+        const localeMap = {
+          jp: t("source_japanese"),
+          en: t("source_english"),
+        };
 
         $textContainer.appendChild($loading);
         isLoading = true;
@@ -187,16 +163,13 @@ async function init() {
             isLoading = false;
             $button.classList.add("hide");
 
-            const theme = getComputedStyle(document.body).colorScheme === 'dark' ? 'dark' : 'light';
-            const provider = resp?.payload?.provider || translator;
-            const providerLabel = resp?.payload?.providerLabel || t("translatorLabel");
-            const sourceLabel = resp?.payload?.sourceLabel || localeMap[locale] || t("autoDetect");
-            const targetLabel = resp?.payload?.targetLabel || t("autoDetect");
-            const translateResult = resp?.payload?.translateResult || t("translateFailed");
+            const providerLabel = resp?.payload?.providerLabel || t("content_translator_label");
+            const sourceLabel = resp?.payload?.sourceLabel || localeMap[locale] || t("content_auto_detect");
+            const targetLabel = resp?.payload?.targetLabel || t("content_auto_detect");
+            const translateResult = resp?.payload?.translateResult || t("content_translate_failed");
             const $translateContent = createElement(
               templateReplace(
                 template.fromDiv,
-                getProviderLogoPath(provider, theme),
                 `${providerLabel} / ${sourceLabel} -> ${targetLabel}`,
                 translateResult
               )

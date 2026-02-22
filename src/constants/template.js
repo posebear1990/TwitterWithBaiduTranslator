@@ -1,30 +1,19 @@
-function normalizeUILanguage(uiLanguage = "zh") {
-  return uiLanguage === "en" ? "en" : "zh";
+function msg(key, fallback = "") {
+  return chrome.i18n.getMessage(key) || fallback;
 }
 
-const I18N_TEXT_MAP = {
-  zh: {
-    poweredBy: "由",
-    translatedFrom: "翻译自",
-    translatePost: "翻译帖子",
-  },
-  en: {
-    poweredBy: "By",
-    translatedFrom: "Translated from",
-    translatePost: "Translate post",
-  },
-};
-
-export function getTemplate(uiLanguage = "zh") {
-  const language = normalizeUILanguage(uiLanguage);
-  const copy = I18N_TEXT_MAP[language];
+export function getTemplate() {
+  const copy = {
+    translatedFrom: msg("content_translated_from", "Translated from"),
+    translatePost: msg("content_translate_post", "Translate post"),
+  };
 
   return {
     fromDiv: `<div class="tt-translator-result-container">
               <div class="tt-translator-result-header">
-                ${copy.poweredBy}<a target="_blank" role="link" data-focusable="true" class="tt-translator-result-supporter" rel="noopener noreferrer"> <img src="{0}" /> </a><span class="tt-translator-result-switch" role="button">${copy.translatedFrom} {1}</span>
+                <span class="tt-translator-result-switch" role="button">${copy.translatedFrom} {0}</span>
               </div>
-              <textarea class="tt-translator-result" readonly>{2}</textarea>
+              <textarea class="tt-translator-result" readonly>{1}</textarea>
             </div>`,
     translateButton: `<div class="tt-translator-button" role="button"><span class="tt-translator-content">${copy.translatePost}</span></div>`,
     loading:
@@ -32,4 +21,4 @@ export function getTemplate(uiLanguage = "zh") {
   };
 }
 
-export default getTemplate("zh");
+export default getTemplate();

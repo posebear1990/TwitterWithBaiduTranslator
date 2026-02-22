@@ -1,0 +1,128 @@
+{
+  "extName": {
+    "message": "叉特翻译熊 - X(Twitter) with Your Favorite Translator"
+  },
+  "extDescription": {
+    "message": "一款用于 X/Twitter 的 Chrome 翻译插件，支持你喜欢的任意翻译引擎。"
+  },
+  "popup_title": {
+    "message": "翻译引擎配置"
+  },
+  "translator_label": {
+    "message": "翻译引擎"
+  },
+  "translator_google": {
+    "message": "Google Translate（默认）"
+  },
+  "translator_llm": {
+    "message": "LLM API（主流提供商）"
+  },
+  "target_language_label": {
+    "message": "目标语言"
+  },
+  "target_zh_cn": {
+    "message": "简体中文"
+  },
+  "target_zh_tw": {
+    "message": "繁体中文"
+  },
+  "target_en": {
+    "message": "英语"
+  },
+  "target_ja": {
+    "message": "日语"
+  },
+  "target_ko": {
+    "message": "韩语"
+  },
+  "target_fr": {
+    "message": "法语"
+  },
+  "target_de": {
+    "message": "德语"
+  },
+  "target_es": {
+    "message": "西班牙语"
+  },
+  "target_id": {
+    "message": "印尼语"
+  },
+  "target_tr": {
+    "message": "土耳其语"
+  },
+  "target_pt": {
+    "message": "葡萄牙语"
+  },
+  "target_ar": {
+    "message": "阿拉伯语"
+  },
+  "target_hi": {
+    "message": "印地语"
+  },
+  "baidu_app_id_label": {
+    "message": "Baidu APP ID"
+  },
+  "baidu_key_label": {
+    "message": "Baidu 密钥"
+  },
+  "llm_provider_label": {
+    "message": "LLM 提供商"
+  },
+  "llm_api_key_label": {
+    "message": "API Key"
+  },
+  "llm_model_label": {
+    "message": "模型（可自定义）"
+  },
+  "saved_status": {
+    "message": "配置已保存"
+  },
+  "tip_target_language": {
+    "message": "支持在弹窗中选择翻译目标语言（默认按浏览器语言在中文/英语间选择）。"
+  },
+  "tip_google": {
+    "message": "引擎选择为 <b>Google</b> 时无需配置 API。"
+  },
+  "tip_baidu": {
+    "message": "引擎选择为 <b>Baidu</b> 时请填写 APP ID + 密钥。"
+  },
+  "tip_llm": {
+    "message": "引擎选择为 <b>LLM API</b> 时请填写提供商、API Key 与模型名称。"
+  },
+  "tip_mapping_issue": {
+    "message": "由于测试不足，如果配置映射有问题，可以联系我：<a href=\"mailto:posebear1990@gmail.com\">posebear1990@gmail.com</a>。"
+  },
+  "tip_baidu_video_prefix": {
+    "message": "百度配置方法可参考"
+  },
+  "tip_baidu_video_link": {
+    "message": "本视频"
+  },
+  "tip_baidu_video_suffix": {
+    "message": "❤"
+  },
+  "content_powered_by": {
+    "message": "由"
+  },
+  "content_translated_from": {
+    "message": "翻译自"
+  },
+  "content_translate_post": {
+    "message": "翻译帖子"
+  },
+  "content_translator_label": {
+    "message": "翻译引擎"
+  },
+  "content_auto_detect": {
+    "message": "自动检测"
+  },
+  "content_translate_failed": {
+    "message": "翻译失败，请稍后重试"
+  },
+  "source_japanese": {
+    "message": "日语"
+  },
+  "source_english": {
+    "message": "英语"
+  }
+}
