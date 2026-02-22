@@ -546,6 +546,26 @@ function safeSendTabMessage(tabId, payload) {
   });
 }
 
+function extractErrorMessage(error) {
+  if (!error) {
+    return "";
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error.name === "timeout" && error.detail) {
+    return extractErrorMessage(error.detail);
+  }
+
+  if (error.message) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
 init();
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -582,7 +602,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
           type: "translate-error",
           payload: {
             translateResult: `${getMessage("translateErrorPrefix", uiLanguage)}${
-              error?.message || error.toString()
+              extractErrorMessage(error)
             }`,
           },
         });
