@@ -19,12 +19,62 @@ function getTranslatorFromStorage(storage = {}) {
   return storage.appId && storage.appKey ? "baidu" : "google";
 }
 
-function shouldHideTranslatorButton(tweetLang = "") {
-  if (!targetLanguage.toLowerCase().startsWith("zh")) {
+function normalizeLangTag(tag = "") {
+  return (tag || "").toLowerCase().replace(/_/g, "-").trim();
+}
+
+function getBaseLanguage(tag = "") {
+  return normalizeLangTag(tag).split("-")[0] || "";
+}
+
+function parseZhVariant(tag = "") {
+  const parts = normalizeLangTag(tag).split("-").filter(Boolean);
+  if (parts[0] !== "zh") {
+    return null;
+  }
+
+  const rest = parts.slice(1);
+  const script = rest.find((p) => p === "hans" || p === "hant") || "";
+  const region = rest.find((p) => ["cn", "tw", "hk", "mo", "sg", "my"].includes(p)) || "";
+  return { script, region };
+}
+
+function isSameTargetLanguage(tweetLang = "", targetLang = "") {
+  const tweetBase = getBaseLanguage(tweetLang);
+  const targetBase = getBaseLanguage(targetLang);
+  if (!tweetBase || !targetBase) {
+    return false;
+  }
+  // "und" means undefined; don't treat it as "already in target language".
+  if (tweetBase === "und") {
     return false;
   }
 
-  return tweetLang.toLowerCase().startsWith("zh");
+  if (tweetBase !== targetBase) {
+    return false;
+  }
+
+  // For Chinese, try to respect known script/region differences (Hans/Hant, CN/TW).
+  if (tweetBase === "zh") {
+    const tweetZh = parseZhVariant(tweetLang);
+    const targetZh = parseZhVariant(targetLang);
+    if (!tweetZh || !targetZh) {
+      return true;
+    }
+
+    if (tweetZh.script && targetZh.script && tweetZh.script !== targetZh.script) {
+      return false;
+    }
+    if (tweetZh.region && targetZh.region && tweetZh.region !== targetZh.region) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function shouldHideTranslatorButton(tweetLang = "") {
+  return isSameTargetLanguage(tweetLang, targetLanguage);
 }
 
 function getTweetRawText($textContainer) {
@@ -65,13 +115,15 @@ function addTranslatorButton($timelineWrapper, $translateButton) {
         $tweetWrapper.nextElementSibling?.querySelector("div > span[aria-expanded]")
     );
 
-    if ($googleTranslateWrapper?.getAttribute("lang") === "en") {
-      tweetWrapperList = tweetWrapperList.filter(
-        ($tweetWrapper) => $tweetWrapper !== $googleTranslateWrapper
-      );
-    } else {
-      $googleTranslateWrapper?.nextElementSibling?.getAttribute("role") === "button" &&
-        $googleTranslateWrapper.nextElementSibling.remove();
+    // If X's own translate toggle exists on status page, remove it so users only see the extension button.
+    // Avoid touching the "show more/less" toggle (aria-expanded).
+    if ($googleTranslateWrapper) {
+      const $next = $googleTranslateWrapper.nextElementSibling;
+      const isButton = $next?.getAttribute("role") === "button";
+      const isExpandToggle = !!$next?.querySelector("div > span[aria-expanded]");
+      if (isButton && !isExpandToggle) {
+        $next.remove();
+      }
     }
   }
   tweetWrapperList.forEach(($tweetWrapper) => {
