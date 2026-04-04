@@ -1,6 +1,6 @@
 {
   "name": "twitter-with-baidu-translator",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A Chrome extension for one-click X/Twitter translation with your favorite translator.",
   "scripts": {
     "build": "rm -rf dist && mkdir dist && cp -r src/assest/* dist && node rollup.js",
