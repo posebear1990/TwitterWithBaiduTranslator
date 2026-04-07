@@ -2,7 +2,7 @@
   "name": "__MSG_extName__",
   "version": "2.0.5",
   "description": "__MSG_extDescription__",
-  "permissions": ["storage", "activeTab", "webRequest", "tabs"],
+  "permissions": ["storage", "tabs"],
   "background": {
     "service_worker": "service_worker.js"
   },
