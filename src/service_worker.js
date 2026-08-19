@@ -20,7 +20,7 @@ const PROVIDER_LABEL_MAP = {
 const LLM_DEFAULT_MODEL_MAP = {
   openai: "gpt-4o-mini",
   anthropic: "claude-3-5-haiku-latest",
-  gemini: "gemini-2.0-flash",
+  gemini: "gemini-3.7-flash",
   openrouter: "deepseek/deepseek-chat-v3-0324:free",
   deepseek: "deepseek-chat",
   groq: "llama-3.3-70b-versatile",
